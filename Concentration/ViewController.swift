@@ -14,24 +14,29 @@ import UIKit
 
 class ViewController: UIViewController {
     
-    lazy var game = Concentration(numberOfPairsOfCards: (cardButtons.count + 1) / 2)
+    private lazy var game = Concentration(numberOfPairsOfCards: numberOfPairsOfCards)
     
-    @IBOutlet var cardButtons: [UIButton]!
+    private var numberOfPairsOfCards: Int {
+        return (cardButtons.count + 1) / 2
+    }
     
-    @IBOutlet weak var flipCountLabel: UILabel!
+    
+    @IBOutlet private var cardButtons: [UIButton]!
+    
+    @IBOutlet private weak var flipCountLabel: UILabel!
     
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
     }
 
-    @IBAction func touchCard(_ sender: UIButton) {
+    @IBAction private func touchCard(_ sender: UIButton) {
         let cardNumber = cardButtons.firstIndex(of: sender)!
         game.chooseCard(at: cardNumber)
         updateViewFromModel()
     }
     
-    func updateViewFromModel() {
+    private func updateViewFromModel() {
         for index in cardButtons.indices {
             let button = cardButtons[index]
             let card = game.cards[index]
@@ -40,35 +45,30 @@ class ViewController: UIViewController {
                 button.backgroundColor = #colorLiteral(red: 0.9999960065, green: 1, blue: 1, alpha: 1)
             } else {
                 button.setTitle("", for: UIControl.State.normal)
-                button.backgroundColor = #colorLiteral(red: 1, green: 0.5763723254, blue: 0, alpha: 1)
-                if card.isMatched {
-                    button.isHidden = true
-                }
+                button.backgroundColor = card.isMatched ? #colorLiteral(red: 1, green: 1, blue: 1, alpha: 0) : #colorLiteral(red: 1, green: 0.5763723254, blue: 0, alpha: 1)
             }
-        }
-
-        if game.gameover {
-            cardButtons.forEach({$0.isHidden = false})
-            game = Concentration(numberOfPairsOfCards: (cardButtons.count + 1) / 2)
-            game.gameover = false
         }
         
         flipCountLabel.text = "Count: \(game.flipCount)"
         
-        
     }
     
-    var emojiChoices = ["🐼","🐵","🐴","👻","🏀","🦊","💩","💀","🎃","😺"]
+    private var emojiChoices = ["🐼","🐵","🐴","👻","🏀","🦊","💩","💀","🎃","😺"]
     
-    var emojiDictionary = [Int:String]()
+    private var emojiDictionary = [Card:String]()
     
-    func emoji(for card: Card) -> String {
-        if emojiDictionary[card.identifier] == nil, emojiChoices.count > 0 {
-            let randomIndex = Int(arc4random_uniform(UInt32(emojiChoices.count)))
-            emojiDictionary[card.identifier] = emojiChoices.remove(at: randomIndex)
+    private func emoji(for card: Card) -> String {
+        if emojiDictionary[card] == nil, emojiChoices.count > 0 {
+            emojiDictionary[card] = emojiChoices.remove(at: emojiChoices.count.arc4random)
         }
-        return emojiDictionary[card.identifier] ?? "?"
+        return emojiDictionary[card] ?? "?"
     }
     
+
 }
 
+extension Int {
+    var arc4random:Int {
+        return Int(arc4random_uniform(UInt32(self)))
+    }
+}
